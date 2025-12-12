@@ -4,14 +4,14 @@ edition = "2024"
 version = "0.1.0"
 
 [dependencies]
-bevy = { workspace = true, features = ["file_watcher"] }
+bevy = { workspace = true }
 bevy_egui = { workspace = true }
 bevy-inspector-egui = { workspace = true }
 bevy_enhanced_input = { workspace = true }
 bevy_asset_loader = { workspace = true }
-leafwing_manifest = { workspace = true, features = ["ron"] }
-serde = "1.0.228"
-ron = "0.12.0"
+leafwing_manifest = { workspace = true }
+serde = { workspace = true }
+ron = { workspace = true }
 
 [features]
 default = []

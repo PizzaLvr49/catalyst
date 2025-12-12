@@ -9,10 +9,13 @@ use bevy::{
 use bevy_asset_loader::prelude::*;
 use leafwing_manifest::manifest::Manifest;
 
+use ron::extensions::Extensions;
+use ron::options::Options;
+
 mod manifest_definition;
 use manifest_definition::{ItemManifest, RawItemManifest};
 
-fn main() {
+fn main() -> AppExit {
     App::new()
         .add_plugins(DefaultPlugins.set(WindowPlugin {
             primary_window: Some(Window {
@@ -31,7 +34,7 @@ fn main() {
                 .load_collection::<ItemAssets>(),
         )
         .add_systems(OnEnter(GameState::Running), process_and_print_items)
-        .run();
+        .run()
 }
 
 #[derive(Debug, Clone, Copy, Default, Eq, PartialEq, Hash, States)]
@@ -52,7 +55,6 @@ fn process_and_print_items(
     item_assets: Res<ItemAssets>,
     raw_assets: Res<Assets<RawItemManifest>>,
 ) {
-    // Merge all raw manifests
     let mut merged = RawItemManifest::default();
     for handle in &item_assets.manifests {
         if let Some(raw) = raw_assets.get(handle) {
@@ -60,12 +62,9 @@ fn process_and_print_items(
         }
     }
 
-    // Convert to final manifest
-    commands.queue(move |world: &mut World| {
-        let item_manifest =
-            ItemManifest::from_raw_manifest(merged, world).expect("Conversion failed");
+    commands.queue(move |world: &mut World| -> Result {
+        let item_manifest = ItemManifest::from_raw_manifest(merged, world)?;
 
-        // Print items
         for (id, item) in &item_manifest.items {
             println!(
                 "ID: {:?}, Name: {}, Description: {}, Value: {}, Weight: {}, Max Stack: {}",
@@ -74,6 +73,8 @@ fn process_and_print_items(
         }
 
         world.insert_resource(item_manifest);
+
+        Ok(())
     });
 }
 
@@ -93,7 +94,12 @@ impl AssetLoader for ItemAssetLoader {
         Box::pin(async move {
             let mut bytes = Vec::new();
             reader.read_to_end(&mut bytes).await?;
-            let asset = ron::de::from_bytes::<RawItemManifest>(&bytes)?;
+
+            // Construct the same RON options you used in your example
+            let options = Options::default().with_default_extension(Extensions::all());
+
+            let asset: RawItemManifest = options.from_bytes(&bytes)?;
+
             Ok(asset)
         })
     }

@@ -1,6 +1,6 @@
-(
+RawItemManifest(
     items: [
-        (
+        RawItem(
             name: "Sword",
             description: "A sharp blade",
             value: 100,
