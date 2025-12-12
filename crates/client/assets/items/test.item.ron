@@ -1,0 +1,12 @@
+(
+    items: [
+        (
+            name: "Sword",
+            description: "A sharp blade",
+            value: 100,
+            weight: 5.0,
+            max_stack: 1,
+            sprite: "textures/sword.png",
+        ),
+    ],
+)
