@@ -10,7 +10,7 @@ leafwing_manifest = { version = "0.5", features = ["ron"] }
 bevy_egui = "0.38"
 bevy-inspector-egui = "0.35"
 bevy_enhanced_input = "0.20"
-serde = "1.0"
+serde = "1"
 ron = "0.12"
 
 [profile.dev.package."*"]

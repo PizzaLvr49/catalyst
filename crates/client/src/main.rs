@@ -1,5 +1,3 @@
-use std::error::Error;
-
 use bevy::{
     asset::{AssetLoader, LoadContext, io::Reader},
     prelude::*,
@@ -7,12 +5,16 @@ use bevy::{
     window::{PresentMode, WindowMode},
 };
 use bevy_asset_loader::prelude::*;
+use bevy_egui::EguiPlugin;
+use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use leafwing_manifest::manifest::Manifest;
 
 use ron::extensions::Extensions;
 use ron::options::Options;
 
+mod combat;
 mod manifest_definition;
+
 use manifest_definition::{ItemManifest, RawItemManifest};
 
 fn main() -> AppExit {
@@ -25,6 +27,7 @@ fn main() -> AppExit {
             }),
             ..default()
         }))
+        .add_plugins((EguiPlugin::default(), WorldInspectorPlugin::default()))
         .register_asset_loader(ItemAssetLoader)
         .init_asset::<RawItemManifest>()
         .init_state::<GameState>()
@@ -55,6 +58,8 @@ fn process_and_print_items(
     item_assets: Res<ItemAssets>,
     raw_assets: Res<Assets<RawItemManifest>>,
 ) {
+    commands.spawn(Camera2d);
+
     let mut merged = RawItemManifest::default();
     for handle in &item_assets.manifests {
         if let Some(raw) = raw_assets.get(handle) {
@@ -83,7 +88,7 @@ struct ItemAssetLoader;
 impl AssetLoader for ItemAssetLoader {
     type Asset = RawItemManifest;
     type Settings = ();
-    type Error = Box<dyn Error + Send + Sync + 'static>;
+    type Error = BevyError;
 
     fn load(
         &self,
@@ -95,7 +100,6 @@ impl AssetLoader for ItemAssetLoader {
             let mut bytes = Vec::new();
             reader.read_to_end(&mut bytes).await?;
 
-            // Construct the same RON options you used in your example
             let options = Options::default().with_default_extension(Extensions::all());
 
             let asset: RawItemManifest = options.from_bytes(&bytes)?;
